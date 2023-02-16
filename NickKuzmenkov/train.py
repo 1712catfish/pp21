@@ -40,8 +40,6 @@ def get_dataset(filenames, labeled=True, ordered=True, shuffled=False,
                 repeated=False, cached=False, distributed=True):
     auto = tf.data.experimental.AUTOTUNE
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads=auto)
-    dataset = dataset.shuffle(count_data_items(filenames), seed=Settings.seed)
-    print("Done shuffling!")
     if not ordered:
         ignore_order = tf.data.Options()
         ignore_order.experimental_deterministic = False
