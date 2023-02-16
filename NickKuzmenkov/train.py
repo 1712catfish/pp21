@@ -73,7 +73,8 @@ callbacks = [
         patience=Settings.patience[0], restore_best_weights=True),
     tf.keras.callbacks.ReduceLROnPlateau(
         monitor='val_f1_score', mode='max',
-        patience=Settings.patience[1], min_lr=Settings.min_lr, verbose=2)]
+        patience=Settings.patience[1], min_lr=Settings.min_lr, verbose=2)
+]
 
 kfold = KFold(n_splits=Settings.folds, shuffle=True, random_state=Settings.seed)
 folds = ['fold_0', 'fold_1', 'fold_2', 'fold_3', 'fold_4']
