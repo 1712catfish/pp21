@@ -1,10 +1,35 @@
+import sys
+sys.path.append('/kaggle/input/efficientnet-keras-dataset/efficientnet_kaggle')
+from keras_cv_attention_models import *
+from kaggle_datasets import KaggleDatasets
 from sklearn.model_selection import KFold
+# import efficientnet.tfkeras as efn
 import matplotlib.pyplot as plt
 import tensorflow_addons as tfa
 import tensorflow as tf
 import pandas as pd
 import numpy as np
 import os
+from keras_cv_attention_models import *
+import tensorflow as tf
+import pandas as pd
+# from keras_cv.layers import RandAugment
+import os
+import numpy as np
+from keras_cv_attention_models import *
+import tensorflow_addons as tfa
+from sklearn.metrics import *
+# from imgaug import augmenters as iaa
+# import imgaug as ia
+import random, re, math
+import numpy as np, pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
+import tensorflow as tf
+print('Tensorflow version ' + tf.__version__)
+from sklearn.model_selection import KFold
+
+tf.random.set_seed(42)
 
 print('Using tensorflow %s' % tf.__version__)
 
@@ -26,7 +51,7 @@ print('Number of replicas:', strategy.num_replicas_in_sync)
 print('Batch size: %.i' % batch_size)
 
 
-class BaseSettings:
+class Settings:
     strategy = strategy
     batch_size = batch_size
 
@@ -37,6 +62,7 @@ class BaseSettings:
                'rust',
                'scab']
 
+    print("Getting gcs paths...")
     gcs_path_raw = KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-0')
     gcs_path_aug = [
         KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords'),
@@ -56,5 +82,7 @@ class BaseSettings:
     folds = 5  # number of KFold folds
     used_folds = [0, 1, 2, 3, 4]  # number of used folds <-- here we use only the first one
     num_classes = len(classes)
+
+
 
 

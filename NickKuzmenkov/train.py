@@ -1,5 +1,7 @@
-class Settings(BaseSettings, ExtraSettings):
-    pass
+try:
+    INTERACTIVE
+except NameError:
+    from NickKuzmenkov.settings import *
 
 
 def count_data_items(filenames):
@@ -98,7 +100,7 @@ for i, (train_index, val_index) in enumerate(kfold.split(folds)):
         model setup
         '''
         with Settings.strategy.scope():
-            model = Settings.get_model()
+            model = get_model()
 
         '''
         data setup
