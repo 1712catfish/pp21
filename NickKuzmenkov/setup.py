@@ -71,7 +71,7 @@ class Settings:
         KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-3')
     ]
 
-    seed = 2021
+    seed = 42
     epochs = 100  # maximum number of epochs <-- keep this large as we use EarlyStopping
     patience = [5, 2]  # patience[0] is for EarlyStopping, patience[1] is for ReduceLROnPlateau
     factor = .1  # new_lr =  lr * factor if patience_count > patience[1]

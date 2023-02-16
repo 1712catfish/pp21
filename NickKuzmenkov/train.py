@@ -48,12 +48,12 @@ def get_dataset(filenames, labeled=True, ordered=True, shuffled=False,
         lambda x: read_tfrecord(x, labeled=labeled),
         num_parallel_calls=auto)
     if shuffled:
-        dataset = dataset.shuffle(100, seed=Settings.seed)
+        dataset = dataset.shuffle(42, seed=Settings.seed)
     if repeated:
         dataset = dataset.repeat()
     dataset = dataset.batch(Settings.batch_size)
-    dataset = dataset.map(lambda x, y: (
-        tf.image.resize(x, [Settings.model_img_size, Settings.model_img_size]), y), num_parallel_calls=auto)
+    # dataset = dataset.map(lambda x, y: (
+    #     tf.image.resize(x, [Settings.model_img_size, Settings.model_img_size]), y), num_parallel_calls=auto)
     if cached:
         dataset = dataset.cache()
     dataset = dataset.prefetch(auto)
