@@ -102,11 +102,11 @@ for i, (train_index, val_index) in enumerate(kfold.split(folds)):
         '''
         with Settings.strategy.scope():
             model = get_model()
-            model.compile(
-                loss=Settings.loss,
-                optimizer=Settings.optimizer,
-                metrics=Settings.metrics,
-            )
+            # model.compile(
+            #     loss=Settings.loss,
+            #     optimizer=Settings.optimizer,
+            #     metrics=Settings.metrics,
+            # )
 
         '''
         data setup
