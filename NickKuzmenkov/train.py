@@ -102,6 +102,11 @@ for i, (train_index, val_index) in enumerate(kfold.split(folds)):
         '''
         with Settings.strategy.scope():
             model = get_model()
+            model.compile(
+                loss=Settings.loss,
+                optimizer=Settings.optimizer,
+                metrics=Settings.metrics,
+            )
 
         '''
         data setup
@@ -139,7 +144,8 @@ for i, (train_index, val_index) in enumerate(kfold.split(folds)):
             validation_steps=validation_steps,
             callbacks=callbacks,
             epochs=Settings.epochs,
-            verbose=Settings.verbose).history
+            verbose=Settings.verbose
+        ).history
 
         '''
         write out-of-fold predictions

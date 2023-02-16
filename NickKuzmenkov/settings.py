@@ -3,7 +3,18 @@ try:
 except NameError:
     from NickKuzmenkov.setup import *
 
+NUM_CLASSES = len(Settings.classes)
+
 Settings.model_img_size = 280
+Settings.loss = "binary_crossentropy"
+Settings.optimizer="adam"
+Settings.metrics=[
+    "accuracy",
+    tfa.metrics.F1Score(
+        num_classes=NUM_CLASSES,
+        average='macro'
+    )
+]
 
 def get_model():
     model = tf.keras.models.Sequential(name='EfficientNetB4')
