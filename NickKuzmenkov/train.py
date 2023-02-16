@@ -1,96 +1,5 @@
-from sklearn.model_selection import KFold
-import matplotlib.pyplot as plt
-import tensorflow_addons as tfa
-import tensorflow as tf
-import pandas as pd
-import numpy as np
-import os
-
-print('Using tensorflow %s' % tf.__version__)
-
-try:
-    tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
-    tf.config.experimental_connect_to_cluster(tpu)
-    tf.tpu.experimental.initialize_tpu_system(tpu)
-    strategy = tf.distribute.experimental.TPUStrategy(tpu)
-    print('Running on TPUv3-8')
-except:
-    tpu = None
-    tf.keras.mixed_precision.set_global_policy('mixed_float16')
-    strategy = tf.distribute.get_strategy()
-    print('Running on GPU with mixed precision')
-
-batch_size = 16 * strategy.num_replicas_in_sync
-
-print('Number of replicas:', strategy.num_replicas_in_sync)
-print('Batch size: %.i' % batch_size)
-
-
-class BaseSettings:
-    strategy = strategy
-    batch_size = batch_size
-
-    tf_record_img_size = 600
-    classes = ['complex',
-               'frog_eye_leaf_spot',
-               'powdery_mildew',
-               'rust',
-               'scab']
-
-    gcs_path_raw = KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-0')
-    gcs_path_aug = [
-        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords'),
-        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-1'),
-        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-2'),
-        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-3')
-    ]
-
-    seed = 2021
-    epochs = 100  # maximum number of epochs <-- keep this large as we use EarlyStopping
-    patience = [5, 2]  # patience[0] is for EarlyStopping, patience[1] is for ReduceLROnPlateau
-    factor = .1  # new_lr =  lr * factor if patience_count > patience[1]
-    min_lr = 1e-8  # minimum optimizer lr
-
-    verbose = 2  # set this to 1 to see live progress bar or to 2 when commiting
-
-    folds = 5  # number of KFold folds
-    used_folds = [0, 1, 2, 3, 4]  # number of used folds <-- here we use only the first one
-    num_classes = len(classes)
-
-
-class Settings(BaseSettings):
-    model_img_size = 280
-    print(batch_size)
-
-    @staticmethod
-    def get_model():
-        model = tf.keras.models.Sequential(name='EfficientNetB4')
-
-        model.add(efn.EfficientNetB4(
-            include_top=False,
-            input_shape=(Settings.img_size, Settings.img_size, 3),
-            weights='noisy-student',
-            pooling='avg'))
-
-        model.add(tf.keras.layers.Dense(
-            Settings.num_classes,
-            kernel_initializer=tf.keras.initializers.RandomUniform(seed=Settings.seed),
-            bias_initializer=tf.keras.initializers.Zeros(), name='dense_top')
-        )
-        model.add(tf.keras.layers.Activation('sigmoid', dtype='float32'))
-
-        model.compile(
-            loss=tf.keras.losses.BinaryCrossentropy(),
-            optimizer='adam',
-            metrics=[
-                tf.keras.metrics.BinaryAccuracy(name='acc'),
-                tfa.metrics.F1Score(
-                    num_classes=len(Settings.classes),
-                    average='macro')
-            ]
-        )
-
-        return model
+class Settings(BaseSettings, ExtraSettings):
+    pass
 
 
 def count_data_items(filenames):
@@ -99,7 +8,7 @@ def count_data_items(filenames):
 
 def decode_image(image_data):
     image = tf.image.decode_jpeg(image_data, channels=3)
-    image = tf.reshape(image, [Settings.img_size, Settings.img_size, 3])
+    image = tf.reshape(image, [Settings.model_img_size, Settings.model_img_size, 3])
     image = tf.cast(image, tf.float32) / 255.
     return image
 

@@ -1,114 +1,60 @@
-histories = []
-scores = []
-image_names = np.empty((0,))
-predicts = np.empty((0, len(CFG.classes)))
+from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt
+import tensorflow_addons as tfa
+import tensorflow as tf
+import pandas as pd
+import numpy as np
+import os
 
-callbacks = [
-    tf.keras.callbacks.EarlyStopping(
-        monitor='val_f1_score', mode='max',
-        patience=CFG.patience[0], restore_best_weights=True),
-    tf.keras.callbacks.ReduceLROnPlateau(
-        monitor='val_f1_score', mode='max',
-        patience=CFG.patience[1], min_lr=CFG.min_lr, verbose=2)]
+print('Using tensorflow %s' % tf.__version__)
 
-kfold = KFold(n_splits=CFG.folds, shuffle=True, random_state=CFG.seed)
-folds = ['fold_0', 'fold_1', 'fold_2', 'fold_3', 'fold_4']
+try:
+    tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
+    tf.config.experimental_connect_to_cluster(tpu)
+    tf.tpu.experimental.initialize_tpu_system(tpu)
+    strategy = tf.distribute.experimental.TPUStrategy(tpu)
+    print('Running on TPUv3-8')
+except:
+    tpu = None
+    tf.keras.mixed_precision.set_global_policy('mixed_float16')
+    strategy = tf.distribute.get_strategy()
+    print('Running on GPU with mixed precision')
 
-'''
-run training loop
-'''
-for i, (train_index, val_index) in enumerate(kfold.split(folds)):
+batch_size = 16 * strategy.num_replicas_in_sync
 
-    '''
-    run only selected folds
-    '''
-    if i in CFG.used_folds:
+print('Number of replicas:', strategy.num_replicas_in_sync)
+print('Batch size: %.i' % batch_size)
 
-        print('=' * 74)
-        print(f'Fold {i}')
-        print('=' * 74)
 
-        '''
-        reinitialize the system
-        '''
-        if tpu is not None:
-            tf.tpu.experimental.initialize_tpu_system(tpu)
+class BaseSettings:
+    strategy = strategy
+    batch_size = batch_size
 
-        '''
-        model setup
-        '''
-        with CFG.strategy.scope():
-            model = get_model()
+    tf_record_img_size = 600
+    classes = ['complex',
+               'frog_eye_leaf_spot',
+               'powdery_mildew',
+               'rust',
+               'scab']
 
-            model.compile(
-                loss=tf.keras.losses.BinaryCrossentropy(),
-                optimizer='adam',
-                metrics=[
-                    tf.keras.metrics.BinaryAccuracy(name='acc'),
-                    tfa.metrics.F1Score(
-                        num_classes=len(CFG.classes),
-                        average='macro')])
+    gcs_path_raw = KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-0')
+    gcs_path_aug = [
+        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords'),
+        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-1'),
+        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-2'),
+        KaggleDatasets().get_gcs_path('pp2021-kfold-tfrecords-3')
+    ]
 
-        '''
-        data setup
-        '''
-        train_filenames = []
-        for j in train_index:
-            train_filenames += tf.io.gfile.glob(os.path.join(CFG.gcs_path_aug[0], folds[j], '*.tfrec'))
-            train_filenames += tf.io.gfile.glob(os.path.join(CFG.gcs_path_aug[1], folds[j], '*.tfrec'))
-            train_filenames += tf.io.gfile.glob(os.path.join(CFG.gcs_path_aug[2], folds[j], '*.tfrec'))
-            train_filenames += tf.io.gfile.glob(os.path.join(CFG.gcs_path_aug[3], folds[j], '*.tfrec'))
-        np.random.shuffle(train_filenames)
+    seed = 2021
+    epochs = 100  # maximum number of epochs <-- keep this large as we use EarlyStopping
+    patience = [5, 2]  # patience[0] is for EarlyStopping, patience[1] is for ReduceLROnPlateau
+    factor = .1  # new_lr =  lr * factor if patience_count > patience[1]
+    min_lr = 1e-8  # minimum optimizer lr
 
-        val_filenames = []
-        for j in val_index:
-            val_filenames += tf.io.gfile.glob(os.path.join(CFG.gcs_path_raw, folds[j], '*.tfrec'))
+    verbose = 2  # set this to 1 to see live progress bar or to 2 when commiting
 
-        train_dataset = get_dataset(
-            train_filenames,
-            ordered=False, shuffled=True, repeated=True)
+    folds = 5  # number of KFold folds
+    used_folds = [0, 1, 2, 3, 4]  # number of used folds <-- here we use only the first one
+    num_classes = len(classes)
 
-        val_dataset = get_dataset(
-            val_filenames,
-            cached=True)
 
-        steps_per_epoch = count_data_items(train_filenames) // (20 * CFG.batch_size)
-        validation_steps = count_data_items(val_filenames) // CFG.batch_size
-
-        '''
-        fit
-        '''
-        history = model.fit(
-            train_dataset,
-            steps_per_epoch=steps_per_epoch,
-            validation_data=val_dataset,
-            validation_steps=validation_steps,
-            callbacks=callbacks,
-            epochs=CFG.epochs,
-            verbose=CFG.verbose).history
-
-        '''
-        write out-of-fold predictions
-        '''
-        size = count_data_items(val_filenames)
-        steps = size // CFG.batch_size + 1
-
-        val_dataset = get_dataset(val_filenames, labeled=False, distributed=False)
-        val_predicts = model.predict(
-            val_dataset.map(lambda x, y: x),
-            steps=steps,
-            verbose=CFG.verbose)[:size]
-        val_image_names = [x.decode() for x in val_dataset.map(lambda x, y: y).unbatch().take(size).as_numpy_iterator()]
-
-        image_names = np.concatenate((image_names, val_image_names))
-        predicts = np.concatenate((predicts, val_predicts))
-
-        '''
-        finalize
-        '''
-        model.save_weights(f'model_{i}.h5')
-        histories.append(pd.DataFrame(history))
-        scores.append(histories[-1]['val_f1_score'].max())
-
-    else:
-        pass

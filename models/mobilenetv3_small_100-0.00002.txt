@@ -1,0 +1,25 @@
+2023-02-03 16:59:55.694379: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:185] None of the MLIR Optimization Passes are enabled (registered 2)
+Epoch 1/100
+232/232 [==============================] - ETA: 0s - loss: 1.6476 - accuracy: 0.5032
+2023-02-03 17:08:06.796743: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:175] Filling up shuffle buffer (this may take a while): 546 of 1000
+2023-02-03 17:08:15.258921: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:228] Shuffle buffer filled.
+232/232 [==============================] - 570s 2s/step - loss: 1.6476 - accuracy: 0.5032 - val_loss: 1.1036 - val_accuracy: 0.6727
+Epoch 2/100
+232/232 [==============================] - ETA: 0s - loss: 0.9647 - accuracy: 0.7176
+2023-02-03 17:17:05.457774: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:175] Filling up shuffle buffer (this may take a while): 526 of 1000
+2023-02-03 17:17:13.700596: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:228] Shuffle buffer filled.
+232/232 [==============================] - 532s 2s/step - loss: 0.9647 - accuracy: 0.7176 - val_loss: 0.8988 - val_accuracy: 0.7425
+Epoch 3/100
+232/232 [==============================] - ETA: 0s - loss: 0.8488 - accuracy: 0.7499
+2023-02-03 17:25:57.679484: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:175] Filling up shuffle buffer (this may take a while): 513 of 1000
+2023-02-03 17:26:05.179577: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:228] Shuffle buffer filled.
+232/232 [==============================] - 531s 2s/step - loss: 0.8488 - accuracy: 0.7499 - val_loss: 0.8468 - val_accuracy: 0.7570
+Epoch 4/100
+232/232 [==============================] - ETA: 0s - loss: 0.8106 - accuracy: 0.7612
+2023-02-03 17:34:45.886185: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:175] Filling up shuffle buffer (this may take a while): 484 of 1000
+2023-02-03 17:34:53.725073: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:228] Shuffle buffer filled.
+232/232 [==============================] - 523s 2s/step - loss: 0.8106 - accuracy: 0.7612 - val_loss: 0.8272 - val_accuracy: 0.7624
+Epoch 5/100
+232/232 [==============================] - ETA: 0s - loss: 0.7967 - accuracy: 0.7640
+2023-02-03 17:43:29.888248: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:175] Filling up shuffle buffer (this may take a while): 419 of 1000
+2023-02-03 17:43:38.947250: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:228] Shuffle buffer filled.
