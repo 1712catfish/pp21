@@ -77,7 +77,7 @@ class Settings:
     factor = .1  # new_lr =  lr * factor if patience_count > patience[1]
     min_lr = 1e-8  # minimum optimizer lr
 
-    verbose = 2  # set this to 1 to see live progress bar or to 2 when commiting
+    verbose = 1  # set this to 1 to see live progress bar or to 2 when commiting
 
     folds = 5  # number of KFold folds
     used_folds = [0, 1, 2, 3, 4]  # number of used folds <-- here we use only the first one
