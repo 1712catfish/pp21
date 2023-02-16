@@ -28,9 +28,9 @@ from sklearn.metrics import f1_score, precision_score, recall_score, confusion_m
 import tensorflow as tf
 print('Tensorflow version ' + tf.__version__)
 from sklearn.model_selection import KFold
+from keras.layers import *
 
 tf.random.set_seed(42)
-
 print('Using tensorflow %s' % tf.__version__)
 
 try:
