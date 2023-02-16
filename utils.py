@@ -13,3 +13,5 @@ def solve_strategy():
     print('#Replicas: ', strategy.num_replicas_in_sync)
 
     return strategy
+
+
