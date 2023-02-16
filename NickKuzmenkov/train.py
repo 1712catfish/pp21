@@ -11,7 +11,6 @@ def count_data_items(filenames):
 def decode_image(image_data):
     image = tf.image.decode_jpeg(image_data, channels=3)
     image = tf.reshape(image, [Settings.tf_record_img_size, Settings.tf_record_img_size, 3])
-    image = tf.image.resize(image, [Settings.model_img_size, Settings.model_img_size])
     image = tf.cast(image, tf.float32) / 255.
     return image
 
@@ -41,6 +40,7 @@ def get_dataset(filenames, labeled=True, ordered=True, shuffled=False,
                 repeated=False, cached=False, distributed=True):
     auto = tf.data.experimental.AUTOTUNE
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads=auto)
+    dataset = dataset.shuffle(count_data_items(filenames), seed=Settings.seed)
     if not ordered:
         ignore_order = tf.data.Options()
         ignore_order.experimental_deterministic = False
@@ -49,10 +49,12 @@ def get_dataset(filenames, labeled=True, ordered=True, shuffled=False,
         lambda x: read_tfrecord(x, labeled=labeled),
         num_parallel_calls=auto)
     if shuffled:
-        dataset = dataset.shuffle(2048, seed=Settings.seed)
+        dataset = dataset.shuffle(100, seed=Settings.seed)
     if repeated:
         dataset = dataset.repeat()
     dataset = dataset.batch(Settings.batch_size)
+    dataset = dataset.map(lambda x, y: (
+        tf.image.resize(x, [Settings.model_img_size, Settings.model_img_size]), y), num_parallel_calls=auto)
     if cached:
         dataset = dataset.cache()
     dataset = dataset.prefetch(auto)
