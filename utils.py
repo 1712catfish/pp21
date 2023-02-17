@@ -1,7 +1,8 @@
 import tensorflow as tf
 
 
-def solve_strategy():
+def solve_hardware():
+    tf.keras.mixed_precision.set_global_policy('mixed_float16')
     try:
         tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
         print("Device:", tpu.master())

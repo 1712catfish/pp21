@@ -107,12 +107,7 @@ def dataset_from_dataframe(df, image_path=IMAGE_PATH,
 # train_dataset = dataset_from_dataframe(train_df, shuffle=False)
 # validation_dataset = dataset_from_dataframe(test_df, training=False)
 
-next(train_dataset.as_numpy_iterator())
 
-def one_hot_encoding_text_label(
-
-
-def get_dataset()
 
 def dataset_from_directory(directory, batch_size=BATCH_SIZE,
                            image_size=IMSIZE, buffer_size=10000,

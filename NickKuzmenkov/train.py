@@ -1,7 +1,9 @@
 try:
-    INTERACTIVE
-except NameError:
-    from NickKuzmenkov.settings import *
+    import os
+    INTERACTIVE = os.environ["INTERACTIVE"]
+    assert INTERACTIVE
+    from NickKuzmenkov.nb_settings import *
+except KeyError:
 
 
 def count_data_items(filenames):
@@ -61,7 +63,6 @@ def get_dataset(filenames, labeled=True, ordered=True, shuffled=False,
         dataset = Settings.strategy.experimental_distribute_dataset(dataset)
     return dataset
 
-
 histories = []
 scores = []
 image_names = np.empty((0,))
@@ -96,8 +97,8 @@ for i, (train_index, val_index) in enumerate(kfold.split(folds)):
         '''
         reinitialize the system
         '''
-        if tpu is not None:
-            tf.tpu.experimental.initialize_tpu_system(tpu)
+        # if tpu is not None:
+        #     tf.tpu.experimental.initialize_tpu_system(tpu)
 
         '''
         model setup
